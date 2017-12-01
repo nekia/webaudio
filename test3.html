@@ -1,0 +1,54 @@
+<html>
+
+<body>
+    <!-- <audio controls autoplay></audio>
+    </script>
+    <fieldset>
+        <legend>RECORD AUDIO</legend>
+        <input onclick="startRecording()" type="button" value="start recording" />
+        <input onclick="stopRecording()" type="button" value="stop recording and play" />
+    </fieldset> -->
+    <script src="javascripts/WebAudioRecorder.js"></script>
+    <script>
+        // audioContext = new AudioContext;
+
+// appends an audio element to playback and download recording
+        function createAudioElement(blobUrl) {
+            const downloadEl = document.createElement('a');
+            downloadEl.style = 'display: block';
+            downloadEl.innerHTML = 'download';
+            downloadEl.download = 'audio.wav';
+            downloadEl.href = blobUrl;
+            const audioEl = document.createElement('audio');
+            audioEl.controls = true;
+            const sourceEl = document.createElement('source');
+            sourceEl.src = blobUrl;
+            sourceEl.type = 'audio/wav';
+            audioEl.appendChild(sourceEl);
+            document.body.appendChild(audioEl);
+            document.body.appendChild(downloadEl);
+        }
+
+        // request permission to access audio stream
+        // https://github.com/higuma/web-audio-recorder-js
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+            // store streaming data chunks in array
+            const chunks = [];
+            var ac = new AudioContext();
+            // var worker = new Worker("javascripts/WebAudioRecorderWav.js");
+            var sourceNode = ac.createMediaStreamSource(stream);
+            const recorder = new WebAudioRecorder(sourceNode, { workerDir: "javascripts/", options: { timeLimit: 5 } });
+            recorder.onTimeout = function(recorder) {
+                console.log("Timeout");
+                recorder.finishRecording();
+            }
+            recorder.onComplete = function(rec, blob) {
+                console.log("Complete");
+                createAudioElement(URL.createObjectURL(blob));
+            };
+            recorder.startRecording();
+        }).catch(console.error);
+    </script>
+</body>
+
+</html>
